@@ -33,6 +33,18 @@ async function run() {
       res.send(result);
     });
 
+
+    app.get("/latest-events", async (req, res) => {
+      const result = await eventColl
+        .find()
+        .sort({ date: -1 })
+        .limit(6)
+        .toArray();
+
+      res.send(result);
+    });
+
+
     app.get("/events/:id", async (req, res) => {
       const { id } = req.params;
       const objectid = new ObjectId(id);
@@ -46,10 +58,17 @@ async function run() {
       res.send(result);
     });
 
+    app.delete("/events/:id", async (req, res) => {
+      const { id } = req.params;
+      const objectid = new ObjectId(id);
+      const result = await eventColl.deleteOne({ _id: objectid });
+
+      res.send(result);
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log("Connected to MongoDB!");
   } finally {
-    // don't close client
   }
 }
 run().catch(console.dir);
