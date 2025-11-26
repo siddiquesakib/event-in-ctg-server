@@ -3,13 +3,12 @@ const cors = require("cors");
 const app = express();
 require("dotenv").config();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-const port = process.env.PORT || 4000; // 3000 port ta use koro na takle cess.env.PORT
+const port = process.env.PORT || 4000;
 
 // middleware
 app.use(express.json());
 app.use(cors());
 
-//mongodb
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@simple-crud-server.tdeipi8.mongodb.net/?appName=simple-crud-server`;
 
 const client = new MongoClient(uri, {
@@ -22,27 +21,15 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
     const db = client.db("event_ctg");
     const eventColl = db.collection("events");
 
     app.get("/events", async (req, res) => {
-      const result = await eventColl.find().toArray();
-      res.send(result);
-    });
-
-    app.post("/event", async (req, res) => {
-      const parcel = req.body;
-      const result = await eventColl.insertOne(parcel);
-      res.send(result);
-    });
-
-    app.post("/event/", async (req, res) => {
-      const { id } = req.params;
-      const objectid = new ObjectId(id);
-      const result = await eventColl.findOne({ _id: objectid });
+      const email = req.query.email;
+      const query = email ? { email } : {};
+      const result = await eventColl.find(query).toArray();
       res.send(result);
     });
 
@@ -53,14 +40,16 @@ async function run() {
       res.send(result);
     });
 
-    // Send a ping to confirm a successful connection
+    app.post("/events", async (req, res) => {
+      const data = req.body;
+      const result = await eventColl.insertOne(data);
+      res.send(result);
+    });
+
     await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    console.log("Connected to MongoDB!");
   } finally {
-    // Ensures that the client will close when you finish/error
-    //     await client.close();
+    // don't close client
   }
 }
 run().catch(console.dir);
@@ -70,5 +59,5 @@ app.get("/", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`Server running on port ${port}`);
 });
