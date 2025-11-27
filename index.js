@@ -33,7 +33,6 @@ async function run() {
       res.send(result);
     });
 
-
     app.get("/latest-events", async (req, res) => {
       const result = await eventColl
         .find()
@@ -43,7 +42,6 @@ async function run() {
 
       res.send(result);
     });
-
 
     app.get("/events/:id", async (req, res) => {
       const { id } = req.params;
@@ -69,6 +67,8 @@ async function run() {
     await client.db("admin").command({ ping: 1 });
     console.log("Connected to MongoDB!");
   } finally {
+    // Ensures that the client will close when you finish/error
+    //     await client.close();
   }
 }
 run().catch(console.dir);
